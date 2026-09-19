@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>open-analytics — local dev (unpublished source)</title>
+<style>
+	body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #111827; }
+	button { padding: 8px 16px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+	button:hover { background: #f3f4f6; }
+	#log { margin-top: 16px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-family: monospace; font-size: 13px; white-space: pre-wrap; min-height: 40px; }
+	.hint { color: #6b7280; font-size: 14px; }
+</style>
+</head>
+<body>
+	<h1>open-analytics — local dev</h1>
+	<p class="hint">
+		<code>basic.html</code> and <code>dashboard-chart.html</code> load the
+		tracker from jsDelivr, which only works once this package is actually
+		published to npm. This page instead loads <code>../src/open-analytics.js</code>
+		directly, so you can try out changes to this repo's source before
+		publishing/tagging a release.
+	</p>
+
+	<button data-track="cta_primary">Tracked button</button>
+	<div id="log">Waiting for events…</div>
+
+	<script>
+		// Mock backend — same rationale as the other examples: nothing here
+		// runs a real /analytics/track endpoint.
+		var logEl = document.getElementById('log');
+		var originalFetch = window.fetch;
+		window.fetch = function (url, opts) {
+			if (url === '/analytics/track') {
+				logEl.textContent = 'Sent: ' + opts.body;
+				return Promise.resolve(new Response('{"success":true}'));
+			}
+			return originalFetch.apply(this, arguments);
+		};
+		if (navigator.sendBeacon) {
+			var originalSendBeacon = navigator.sendBeacon.bind(navigator);
+			navigator.sendBeacon = function (url, body) {
+				if (url === '/analytics/track') {
+					logEl.textContent = 'Sent (beacon): ' + body;
+					return true;
+				}
+				return originalSendBeacon(url, body);
+			};
+		}
+	</script>
+
+	<!-- Local source, not the CDN build — see the hint above. -->
+	<script src="../src/open-analytics.js" data-endpoint="/analytics/track"></script>
+</body>
+</html>

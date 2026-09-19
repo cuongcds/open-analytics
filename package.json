@@ -1,0 +1,35 @@
+{
+	"name": "@cuongcds/open-analytics",
+	"version": "0.1.0",
+	"description": "Dependency-free page-view/click/search tracker script, framework-agnostic on the client side.",
+	"main": "src/open-analytics.js",
+	"unpkg": "dist/open-analytics.min.js",
+	"jsdelivr": "dist/open-analytics.min.js",
+	"files": [
+		"src",
+		"dist"
+	],
+	"keywords": [
+		"analytics",
+		"tracker",
+		"page-view",
+		"click-tracking",
+		"vanilla-js"
+	],
+	"license": "MIT",
+	"author": "cuongcds",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/cuongcds/open-analytics.git"
+	},
+	"homepage": "https://github.com/cuongcds/open-analytics#readme",
+	"bugs": {
+		"url": "https://github.com/cuongcds/open-analytics/issues"
+	},
+	"scripts": {
+		"build": "node scripts/build.js"
+	},
+	"devDependencies": {
+		"terser": "^5.31.0"
+	}
+}

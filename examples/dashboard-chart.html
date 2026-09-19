@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>open-analytics — programmatic init + dashboard chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.x/dist/chart.umd.min.js"></script>
+<style>
+	body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #111827; }
+	button { padding: 8px 16px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+	button:hover { background: #f3f4f6; }
+	#log { margin-top: 16px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-family: monospace; font-size: 13px; white-space: pre-wrap; min-height: 40px; }
+	.hint { color: #6b7280; font-size: 14px; }
+	.chart-box { margin-top: 32px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+</style>
+</head>
+<body>
+	<h1>open-analytics — programmatic init + dashboard chart</h1>
+	<p class="hint">
+		Three things this example shows that <code>basic.html</code> doesn't:
+		loading the tracker via <code>OpenAnalytics.init()</code>/<code>.track()</code>
+		from your own code (instead of the drop-in script-tag config) against a
+		full, cross-domain endpoint (<code>https://example.com/analytics/track</code> —
+		mocked below since that host doesn't really exist), and rendering the
+		daily page-views chart with <code>open-analytics-chart.js</code> from a
+		data series (exactly the shape
+		<a href="https://github.com/cuongcds/ci3-analytics">ci3-analytics</a>'s
+		<code>AnalyticsService::buildReport()</code> returns as <code>daily_page_views</code>).
+	</p>
+
+	<button id="fire-custom-event">Fire a custom "signup_click" event</button>
+	<div id="log">Waiting for events…</div>
+
+	<div class="chart-box">
+		<p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;">Page views over time (sample data)</p>
+		<canvas id="analyticsDailyChart" height="80"></canvas>
+	</div>
+
+	<script>
+		// Mock backend, same as basic.html — swap for a real endpoint in production.
+		var HOST_ENDPOINT = 'https://example.com/analytics/track';
+		var logEl = document.getElementById('log');
+		var originalFetch = window.fetch;
+		window.fetch = function (url, opts) {
+			if (url === HOST_ENDPOINT) {
+				logEl.textContent = 'Sent to ' + url + ': ' + opts.body;
+				return Promise.resolve(new Response('{"success":true}'));
+			}
+			return originalFetch.apply(this, arguments);
+		};
+	</script>
+
+	<!-- Loaded from jsDelivr, pinned to a version — see ../README.md#cdn-jsdelivr -->
+	<script src="https://cdn.jsdelivr.net/npm/@cuongcds/open-analytics@0.1.0/dist/open-analytics.min.js"></script>
+	<script>
+		// Programmatic init instead of data-* attributes on the script tag,
+		// against a full cross-domain endpoint (see ../README.md#cross-domain-endpoint).
+		OpenAnalytics.init({
+			endpoint: HOST_ENDPOINT,
+			autoTrackPageView: false, // this demo fires events manually instead
+		});
+
+		document.getElementById('fire-custom-event').addEventListener('click', function () {
+			OpenAnalytics.track('signup_click', { label: 'demo-button' });
+		});
+	</script>
+
+	<script>
+		// Sample series shaped exactly like ci3-analytics's buildReport()['daily_page_views'].
+		window.OPEN_ANALYTICS_DAILY_SERIES = (function () {
+			var series = [];
+			var today = new Date();
+			for (var i = 13; i >= 0; i--) {
+				var d = new Date(today);
+				d.setDate(d.getDate() - i);
+				series.push({
+					day: d.toISOString().slice(0, 10),
+					total: Math.round(20 + Math.random() * 60),
+				});
+			}
+			return series;
+		})();
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/@cuongcds/open-analytics@0.1.0/dist/open-analytics-chart.min.js"></script>
+</body>
+</html>

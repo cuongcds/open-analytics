@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>open-analytics — basic usage</title>
+<style>
+	body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #111827; }
+	button { padding: 8px 16px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; margin-right: 8px; }
+	button:hover { background: #f3f4f6; }
+	#log { margin-top: 24px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-family: monospace; font-size: 13px; white-space: pre-wrap; min-height: 80px; }
+	.hint { color: #6b7280; font-size: 14px; }
+</style>
+</head>
+<body>
+	<h1>open-analytics — basic usage</h1>
+	<p class="hint">
+		This page loads the tracker straight from jsDelivr and points
+		<code>data-endpoint</code> at <code>https://example.com/analytics/track</code> —
+		a full, cross-domain URL, exactly how you'd wire it up against a
+		centralized <a href="https://github.com/cuongcds/ci3-analytics">ci3-analytics</a>
+		deployment on its own domain. Since that host doesn't really exist, a mock
+		<code>fetch</code>/<code>sendBeacon</code> intercepts the call and logs the payload
+		below instead of actually sending it — everything else here is unmodified.
+	</p>
+
+	<p>
+		<button data-track="cta_primary">Primary CTA</button>
+		<button data-track="cta_secondary">Secondary CTA</button>
+		<button id="untracked">Untracked button (no data-track)</button>
+	</p>
+
+	<form data-track-form="newsletter_signup">
+		<input type="email" name="email" placeholder="you@example.com" required>
+		<button type="submit">Subscribe</button>
+	</form>
+
+	<form>
+		<input type="text" name="q" placeholder="Search..." value="resize image">
+		<button type="submit">Search</button>
+	</form>
+
+	<div id="log">Waiting for events…</div>
+
+	<script>
+		// Mock backend: log what the tracker would have POSTed instead of
+		// actually sending it anywhere (https://example.com doesn't run
+		// ci3-analytics). Delete this block in a real page — open-analytics.js
+		// itself has no dependency on it.
+		var HOST_ENDPOINT = 'https://example.com/analytics/track';
+		var logEl = document.getElementById('log');
+		var originalFetch = window.fetch;
+		window.fetch = function (url, opts) {
+			if (url === HOST_ENDPOINT) {
+				logEvent(opts.body);
+				return Promise.resolve(new Response('{"success":true}'));
+			}
+			return originalFetch.apply(this, arguments);
+		};
+		if (navigator.sendBeacon) {
+			var originalSendBeacon = navigator.sendBeacon.bind(navigator);
+			navigator.sendBeacon = function (url, body) {
+				if (url === HOST_ENDPOINT) {
+					logEvent(body);
+					return true;
+				}
+				return originalSendBeacon(url, body);
+			};
+		}
+		function logEvent(body) {
+			var params = new URLSearchParams(body);
+			var entry = {};
+			params.forEach(function (value, key) { entry[key] = value; });
+			var line = JSON.stringify(entry);
+			logEl.textContent = (logEl.textContent === 'Waiting for events…' ? '' : logEl.textContent + '\n') + line;
+		}
+	</script>
+
+	<!-- Loaded from jsDelivr, pinned to a version — see ../README.md#cdn-jsdelivr -->
+	<script src="https://cdn.jsdelivr.net/npm/@cuongcds/open-analytics@0.1.0/dist/open-analytics.min.js"
+		data-endpoint="https://example.com/analytics/track"
+		data-track-attribute="data-track"
+		data-search-input-selector='input[name="q"]'></script>
+</body>
+</html>
