@@ -1,6 +1,6 @@
 {
 	"name": "@cuongcds/open-analytics",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Dependency-free page-view/click/search tracker script, framework-agnostic on the client side.",
 	"main": "src/open-analytics.js",
 	"unpkg": "dist/open-analytics.min.js",

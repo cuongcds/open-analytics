@@ -18,7 +18,7 @@ python -m http.server 8080
 ## CDN examples (require the package to be published)
 
 - **`basic.html`** — drop-in usage loaded from jsDelivr
-  (`https://cdn.jsdelivr.net/npm/@cuongcds/open-analytics@0.1.0/...`), with
+  (`https://cdn.jsdelivr.net/npm/@cuongcds/open-analytics@0.1.1/...`), with
   `data-endpoint` pointed at a full, cross-domain URL
   (`https://example.com/analytics/track`) to demonstrate the cross-domain
   endpoint support (see the main README's "Cross-domain endpoint" section).
@@ -33,7 +33,7 @@ python -m http.server 8080
   `AnalyticsService::buildReport()` returns as `daily_page_views`).
 
 These two load a specific published version
-(`@cuongcds/open-analytics@0.1.0`) from jsDelivr — until that version is
+(`@cuongcds/open-analytics@0.1.1`) from jsDelivr — until that version is
 actually published to npm, the `<script>` tag 404s and neither page will
 track anything. Use `local-dev.html` until then.
 

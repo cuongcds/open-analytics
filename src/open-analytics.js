@@ -52,6 +52,14 @@
 	function send(eventType, payload) {
 		var body = new URLSearchParams(Object.assign({
 			event_type: eventType,
+			// The endpoint can be on any domain — same-origin, or a shared
+			// analytics service on its own domain entirely (see "Cross-domain
+			// endpoint" in the README) — so it has no reliable way to know
+			// which domain actually served the tracked page from the request
+			// alone. Report it explicitly; the backend should still prefer
+			// the browser-set Origin header when present (can't be forged by
+			// page JS, unlike this field) and use this only as a fallback.
+			domain: window.location.hostname,
 			path: window.location.pathname,
 			referrer: document.referrer || '',
 		}, payload || {}));
