@@ -143,7 +143,17 @@
 		},
 	};
 
-	document.addEventListener('DOMContentLoaded', function () {
-		if (!config) init();
-	});
+	// A script placed at the end of <body> (the common, recommended
+	// position — as this project's own layouts do) only executes after
+	// DOMContentLoaded has already fired, so that event never reaches a
+	// listener registered this late. Init immediately whenever the DOM is
+	// already interactive/complete, and only wait for the event otherwise
+	// (e.g. this script loaded via <head> without defer/async).
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', function () {
+			if (!config) init();
+		});
+	} else if (!config) {
+		init();
+	}
 })(window, document);
